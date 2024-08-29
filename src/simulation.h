@@ -11,7 +11,7 @@ using namespace std;
 
 typedef vector<float> threevector;
 
-vector<float> randoms;
+extern vector<float> randoms;
 
 class Electron ; 
 
