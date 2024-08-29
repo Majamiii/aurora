@@ -37,7 +37,7 @@ FFTW_DIR = C:/fftw-3.3.5-dll64
 CXXFLAGS = -std=c++17 -I$(FFTW_DIR)
 
 # Define the linker flags
-LDFLAGS = -L$(FFTW_DIR) -lfftw3 -lfftw3f -lfftw3l
+LDFLAGS = -L$(FFTW_DIR) -lfftw3-3 -lfftw3f-3 -lfftw3l-3
 
 
 # Source and object files
