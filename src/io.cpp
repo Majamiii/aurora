@@ -8,6 +8,10 @@
 #include <string.h>
 #include <fftw3.h>
 
+#include <iostream>
+
+#include "simulation.h"
+
 // This is IO as in INPUT/OUTPUT.  Named this prior to simulating Jupiter's moon Io, so this is a misleading
 // filename.  Sorry.
 

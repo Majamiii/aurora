@@ -37,10 +37,11 @@ FFTW_DIR = C:/fftw-3.3.5-dll64
 CXXFLAGS = -std=c++17 -I$(FFTW_DIR)
 
 # Define the linker flags
-LDFLAGS = -L$(FFTW_DIR)/lib -lfftw3 -lfftw3f -lfftw3l
+LDFLAGS = -L$(FFTW_DIR) -lfftw3 -lfftw3f -lfftw3l
 
 
 # Source and object files
+# SRCS = main.cpp electrostatics.cpp io.cpp
 SRCS = main.cpp electrostatics.cpp io.cpp
 OBJS = $(SRCS:.cpp=.o)
 
