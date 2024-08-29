@@ -6,7 +6,9 @@
 #include "utility_functions.h" 
 #include <fstream>
 #include <string.h>
-#include <fftw3.h>
+// #include <fftw3.h>
+#include "C:\fftw-3.3.5-dll64\fftw3.h"
+// #include <windows.h>
 
 #include <iostream>
 

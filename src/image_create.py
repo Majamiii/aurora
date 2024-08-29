@@ -11,7 +11,7 @@ dat = sys.argv[1]
 alter = sys.argv[2]
 
 path = dat
-print path
+print (path)
 
 x = np.loadtxt(path ,skiprows=1)
 with open(path,'r') as f:
@@ -30,6 +30,3 @@ y[np.where(y > 255)] = 0
 plt.imshow(y,origin='lower',extent=(0,w,0,h))
 plt.savefig("output.png")
 plt.close()
-
-
-

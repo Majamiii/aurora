@@ -1,31 +1,6 @@
-
-
-# files=simulation.h utility_functions.h electrostatics.cpp io.cpp electron.h
-
-# main: $(files) 
-# 	$(CXX) -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread  -orun
-
-# debug: $(files) 
-# 	$(CXX) -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun && gdb ./run
-
-# valgrind: $(files) 
-# 	$(CXX) -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun && valgrind ./run
-
-# clang: $(files)
-# 	clang++ -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun
-
-# clean:
-# 	rm run output/* energy/* rho/*
-
-# prepare:
-# 	mkdir output energy rho
-
-
-
-
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17
+# CXXFLAGS = -std=c++17
 #LDFLAGS = -L/path/to/libraries -lfftw3  # Adjust path and library flags 
 LDFLAGS = -L/C:/fftw-3.3.5-dll64 -lfftw3-3
 TARGET = run
@@ -37,8 +12,7 @@ FFTW_DIR = C:/fftw-3.3.5-dll64
 CXXFLAGS = -std=c++17 -I$(FFTW_DIR)
 
 # Define the linker flags
-LDFLAGS = -L$(FFTW_DIR) -lfftw3-3 -lfftw3f-3 -lfftw3l-3
-
+LDFLAGS = -L$(FFTW_DIR) -lfftw3-3 -lfftw3f-3 -lfftw3l-3 -mconsole
 
 # Source and object files
 # SRCS = main.cpp electrostatics.cpp io.cpp
@@ -71,3 +45,27 @@ prepare:
 	mkdir output
 	mkdir energy
 	mkdir rho
+
+
+
+
+
+# files=simulation.h utility_functions.h electrostatics.cpp io.cpp electron.h
+
+# main: $(files) 
+# 	$(CXX) -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread  -orun
+
+# debug: $(files) 
+# 	$(CXX) -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun && gdb ./run
+
+# valgrind: $(files) 
+# 	$(CXX) -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun && valgrind ./run
+
+# clang: $(files)
+# 	clang++ -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun
+
+# clean:
+# 	rm run output/* energy/* rho/*
+
+# prepare:
+# 	mkdir output energy rho
