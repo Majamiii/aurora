@@ -18,15 +18,21 @@ with open(path,'r') as f:
      w,h = f.readline().split()
 
 
-
 w,h = int(w),int(h)
 plt.figure(figsize=(w/20,h/20))
 
 y = np.reshape(x, (h,w,3)) * 255
 y = y*float(alter)
 
-y[np.where(y > 255)] = 0
+y = np.clip(y,0,255)
+            
+# Convert the data to unsigned 8-bit integer type
+# y = y.astype(np.uint8))
+
+# y[np.where(y > 255)] = 0
 
 plt.imshow(y,origin='lower',extent=(0,w,0,h))
 plt.savefig("output.png")
 plt.close()
+
+print("Image saved as output.png")
