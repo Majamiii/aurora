@@ -66,6 +66,7 @@ class ChargeDensity {
          for (int i=0; i<(resolution_x*resolution_y*resolution_z); i++) {
             p[i]=0;            
          }
+         return 0;
       }
  
       void cleanup() {
@@ -152,6 +153,8 @@ class ElectricField {
 
          inPhiZ = new fftw_complex[Nx*Ny*Nz];
          outEZ = new fftw_complex[Nx*Ny*Nz];
+
+         return 0;
       }
 
       int update_element(float* A, int i, int j, int k, float val) {
@@ -280,6 +283,7 @@ class ElectricField {
        }
 
       rho_out.close();
+      return 0;
    }
 
          

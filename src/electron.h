@@ -88,6 +88,7 @@ public:
         p_emit_r = p_emit_r / p_emit;
         p_emit_g = p_emit_g / p_emit;
         p_emit_b = p_emit_b / p_emit;
+      return 0;
    }
 
    //times for which each emission should be active  
@@ -148,6 +149,7 @@ public:
       Fz = 0;
       respawn_count +=1;
       dead_counter = 0;
+      return 0;
    }
 
 

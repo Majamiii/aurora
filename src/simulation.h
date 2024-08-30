@@ -70,6 +70,7 @@ class Simulation {
          // dE/dx due to atmospheric 'drag'
          //function that could be written to compute atmospheric drag, but I've incorporated this
          //pretty well into the probabilities
+         return 0;
       }
 
  };

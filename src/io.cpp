@@ -34,6 +34,7 @@ class EnergyDensity {
          for (int i=0; i< resolution_z; i++) {
             energy_density[i] = 0;
          }
+         return 0;
       }
 
       //zero it out
@@ -59,6 +60,7 @@ class EnergyDensity {
             energy_density_out << energy_density[i] << "\t" << i << "\n";
          }
          energy_density_out.close();
+         return 0;
       }
 
     void cleanup() {
@@ -101,7 +103,7 @@ class PhotonDensity {
                  G[i] = 0;
                  B[i] = 0;
          }
-
+         return 0;
       }
 
       int incr_element(float *A ,int i, int j, int k,float n) {      
