@@ -154,6 +154,8 @@ cout << sim.N << endl;
 
             }
 
+            //ovde dodati?????
+
             if (e->emitting_time_left < 1) { //if it's done emitting
                e->emitting = 0;
                e->emitting_wavelength = 0;

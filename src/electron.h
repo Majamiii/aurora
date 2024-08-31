@@ -109,6 +109,7 @@ public:
 
    int random_collision() {
       //TO-DO: incorporate scattering here
+      //OVDE SMO
       return 0;
     }
 
