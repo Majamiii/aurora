@@ -27,6 +27,8 @@ class EnergyDensity {
       int resolution_z ;
       float *energy_density; 
       ofstream energy_density_out;
+      ofstream deposition_out;
+      ofstream relative_out;
       
       int init(int resz) {
          resolution_z = resz;
@@ -56,11 +58,46 @@ class EnergyDensity {
 
       int write_out(int t) {
          energy_density_out.open("energy/E_density_" + to_string(t) + ".dat");
+         deposition_out.open("deposition/dep_rate_" + to_string(t) + ".dat");
+         int max_depos = 0;
          for (int i=0; i<resolution_z; i++) {
             energy_density_out << energy_density[i] << "\t" << i << "\n";
+            if (i>0) {
+               int delta_depos = abs ( energy_density[i] - energy_density[i-1] );
+               deposition_out << delta_depos << "\n";
+               if (delta_depos > max_depos) {   //prepping for scaling in order to find relative energy deposition rates
+                  max_depos = delta_depos;
+               }
+            }
          }
+
          energy_density_out.close();
+         deposition_out.close();
+
+         rescale_deposition(t, max_depos);
+
          return 0;
+      }
+
+      int rescale_deposition(int t, int i_factor) {     //function for finding rel dep rate
+
+         ifstream deposition_out;
+
+         deposition_out.open("deposition/dep_rate_" + to_string(t) + ".dat");
+         relative_out.open("relative/rel_rate_" + to_string(t) + ".dat");
+
+         float number;
+         float factor = static_cast<float>(i_factor); //gotta convert it to float
+
+         while (deposition_out >> number) {
+            float rescaledNumber = number / factor; // Example rescaling factor
+            relative_out << rescaledNumber << "\n";
+         }
+
+         deposition_out.close();
+         relative_out.close();
+
+         return 0;         
       }
 
     void cleanup() {

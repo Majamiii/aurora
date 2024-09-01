@@ -38,17 +38,15 @@ debug: $(TARGET)
 # Clean up build files
 clean:
 	del $(TARGET) $(OBJS)
-	rmdir /s /q output energy rho
+	rmdir /s /q output energy rho relative deposition
 
 # Create directories
 prepare:
 	mkdir output
 	mkdir energy
 	mkdir rho
-
-
-
-
+	mkdir relative
+	mkdir deposition
 
 # files=simulation.h utility_functions.h electrostatics.cpp io.cpp electron.h
 

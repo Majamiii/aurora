@@ -61,19 +61,19 @@ def convert_to_image(dat):
 previous_file=""
 thisFile = ""
 
-# for dat in sorted(os.listdir("./output"), key= lambda x: int(("0" + x.split('.')[0].zfill(8)))) :
-#    print (dat)
-#    if dat.endswith(".dat"):
-#       try:
+for dat in sorted(os.listdir("./output"), key= lambda x: int(("0" + x.split('.')[0].zfill(8)))) :
+   print (dat)
+   if dat.endswith(".dat"):
+      try:
 
-#           this_file = convert_to_image(dat)
-#           if previous_file != "":
-#              Interpolate(previous_file,this_file)
+          this_file = convert_to_image(dat)
+          if previous_file != "":
+             Interpolate(previous_file,this_file)
 
-#           previous_file = this_file
+          previous_file = this_file
 
-#       except:
-#          pass
+      except:
+         pass
 
 
 
@@ -94,4 +94,4 @@ def create_animation(image_folder, output_file="animation.mp4", fps=60):
     plt.show()
 
 # Call the function to create and save the animation
-create_animation("pngs", "output_animation.mp4")
+# create_animation("pngs", "output_animation.mp4")

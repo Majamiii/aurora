@@ -62,6 +62,7 @@ int main() {
    float rnd;
    float p_interaction = 0.1;
    int t=0;
+   // int t0=0;
    cout << endl;
    cout << "Beginning to integrate: " << endl;
    for (t=0; t< sim.tmax; t++ ) {
@@ -71,12 +72,12 @@ int main() {
          photon_density.reset();
          energy_density.write_out(t);
          energy_density.reset();
-
+         // cout<<"\n t:  "<<t;
       }
 
 cout << sim.N << endl;
 
-      for (int i=0; i<sim.N ; i++) {
+      for (int i=0; i<sim.N ; i++) {      //sim.N = 2 to the power of 20
 
          Electron* e = &sim.electrons[i]; //make a pointer to the electron we're dealing with
          
@@ -92,6 +93,7 @@ cout << sim.N << endl;
             e->t = t;
          }
 
+         // majami = 0;
           
          voxelx = int((float)photon_density.resolution_x / (float)sim.box_sizex * e->x);
          voxely = int((float)photon_density.resolution_y / (float)sim.box_sizey * e->y);
@@ -128,7 +130,7 @@ cout << sim.N << endl;
          //Check to see if electron will emit energy this timestep:
          if (e->emitting==1 && e->dead_counter == 0) {
             e->E -= sim.E_loss_factor*sim.hc / e->emitting_wavelength;
-            energy_density.increment(voxelz,sim.E_loss_factor*sim.hc / e->emitting_wavelength);
+            energy_density.increment(voxelz,sim.E_loss_factor*sim.hc / e->emitting_wavelength); //deltaE = hc/lambda
             e->emitting_time_left -= 1;
             
             if (  e->z < sim.box_sizez
@@ -138,15 +140,16 @@ cout << sim.N << endl;
                   && e->y >= 0
                   && e->y <= sim.box_sizey    ) {
 
-               if (e->emitting_wavelength == sim.wavelength_red ) {
+               if (e->emitting_wavelength == sim.wavelength_red ) {        //deltaE = 2479,68
                   photon_density.incr_element(photon_density.R, voxelx,voxely,voxelz,0.8) ;
                   photon_density.incr_element(photon_density.G, voxelx,voxely,voxelz,0.16) ;
                   photon_density.incr_element(photon_density.B, voxelx,voxely,voxelz,0.4) ;
-               } else if (e->emitting_wavelength == sim.wavelength_green ) {
+                  // cout << "\n increment density: "<< sim.E_loss_factor*sim.hc / e->emitting_wavelength ;
+               } else if (e->emitting_wavelength == sim.wavelength_green ) {//deltaE = 2066
                   photon_density.incr_element(photon_density.R, voxelx,voxely,voxelz,0.18) ;
                   photon_density.incr_element(photon_density.G, voxelx,voxely,voxelz,0.69) ;
                   photon_density.incr_element(photon_density.B, voxelx,voxely,voxelz,0.4) ;
-               } else if (e->emitting_wavelength == sim.wavelength_blue ) {
+               } else if (e->emitting_wavelength == sim.wavelength_blue ) {//deltaE=1549
                   photon_density.incr_element(photon_density.R, voxelx,voxely,voxelz,0.4) ;
                   photon_density.incr_element(photon_density.G, voxelx,voxely,voxelz,0.4) ;
                   photon_density.incr_element(photon_density.B, voxelx,voxely,voxelz,0.2) ;
