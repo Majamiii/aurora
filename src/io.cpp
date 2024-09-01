@@ -63,7 +63,7 @@ class EnergyDensity {
          for (int i=0; i<resolution_z; i++) {
             energy_density_out << energy_density[i] << "\t" << i << "\n";
             if (i>0) {
-               int delta_depos = abs ( energy_density[i] - energy_density[i-1] );
+               int delta_depos = energy_density[i];
                deposition_out << delta_depos << "\n";
                if (delta_depos > max_depos) {   //prepping for scaling in order to find relative energy deposition rates
                   max_depos = delta_depos;
