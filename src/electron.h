@@ -110,15 +110,18 @@ public:
    int random_collision() {
       //TO-DO: incorporate scattering here
       //OVDE SMO
+      
+      
+
       return 0;
     }
 
-   int rescale_velocities() {
-      //rescales the velocities to be consistent with the current kinetic energy
-      float R = 0.5*sim->m_e*(vx*vx + vy*vy + vz*vz) / E;
-      vz = vz/sqrt(R);
-      return 0; 
-   }
+   // int rescale_velocities() {
+   //    //rescales the velocities to be consistent with the current kinetic energy
+   //    float R = 0.5*sim->m_e*(vx*vx + vy*vy + vz*vz) / E;
+   //    vz = vz/sqrt(R);
+   //    return 0; 
+   // }
 
    
    int reset() {

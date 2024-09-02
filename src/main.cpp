@@ -92,8 +92,6 @@ cout << sim.N << endl;
             e->reset();
             e->t = t;
          }
-
-         // majami = 0;
           
          voxelx = int((float)photon_density.resolution_x / (float)sim.box_sizex * e->x);
          voxely = int((float)photon_density.resolution_y / (float)sim.box_sizey * e->y);
@@ -144,7 +142,6 @@ cout << sim.N << endl;
                   photon_density.incr_element(photon_density.R, voxelx,voxely,voxelz,0.8) ;
                   photon_density.incr_element(photon_density.G, voxelx,voxely,voxelz,0.16) ;
                   photon_density.incr_element(photon_density.B, voxelx,voxely,voxelz,0.4) ;
-                  // cout << "\n increment density: "<< sim.E_loss_factor*sim.hc / e->emitting_wavelength ;
                } else if (e->emitting_wavelength == sim.wavelength_green ) {//deltaE = 2066
                   photon_density.incr_element(photon_density.R, voxelx,voxely,voxelz,0.18) ;
                   photon_density.incr_element(photon_density.G, voxelx,voxely,voxelz,0.69) ;
@@ -156,8 +153,6 @@ cout << sim.N << endl;
                }
 
             }
-
-            //ovde dodati?????
 
             if (e->emitting_time_left < 1) { //if it's done emitting
                e->emitting = 0;
@@ -182,7 +177,7 @@ cout << sim.N << endl;
         }
 ///////////////////////////////////////
 
-         
+         // rescale_velocities();
          
 //FORCES////////////////////////
          e->Fx = 0;
@@ -199,16 +194,25 @@ cout << sim.N << endl;
 ////////////////////////////////
          
 
+
 //INTEGRATION////////////////////////////////////
+         //cos20 = 0.94
+         //sin20 = 0.342
          //Perform equation of motion integration:
          e->vx +=  (e->Fx / sim.m_e) * sim.dt ;
+         // cout<<"\n velx before: "<<e->vx;
+         e->vx *= 0.705;
+         // cout<<"       velx after: "<<e->vx;
          e->vy +=  (e->Fy / sim.m_e) * sim.dt ;
+         e->vy *= 0.705;
          e->vz +=  (e->Fz / sim.m_e) * sim.dt ;
 
          e->x += e->vx * sim.dt;
          e->y += e->vy * sim.dt;
          e->z += e->vz * sim.dt;
 //////////////////////////////////////////////////
+
+// change horizontal velocity: trying out for a 15 degree angle  
          
 
 
@@ -217,7 +221,9 @@ cout << sim.N << endl;
            while (e->y < 0) {e->y += sim.box_sizey;}
            while (e->x > sim.box_sizex) {e->x -= sim.box_sizex;}
            while (e->y > sim.box_sizey) {e->y -= sim.box_sizey;}
-///////////////////////////////////////////           
+///////////////////////////////////////////
+
+
 
 
 //print out a bunch of info for one of the particles so we can see how simulation is progressing 
