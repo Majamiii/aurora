@@ -12,7 +12,6 @@
 using namespace std;
 
 
-
 inline float gen_random() {
    // """Return a vector of (N/2 + N%2) elements sampled from a normal distribution """
     float rnd1 = (float)rand() / RAND_MAX;

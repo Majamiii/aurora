@@ -18,8 +18,18 @@
 #include "io.cpp"
 #include "electron.h"
 
+#include "utility_functions.h"
+
 #include <windows.h>
 
+#include <ctime>
+#include <random>
+#include <cstdlib>
+
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 using namespace std;
 
@@ -45,6 +55,11 @@ int main() {
    float Bx=0.0;
    float Bz=0.0;
    float tmpfloat;
+
+   double verovatnoca_arr[179];
+   int ver_i = 0;
+
+   srand (static_cast <unsigned> (time(0)));
 
 
    for (int i=0; i<sim.N; i++) {
@@ -177,7 +192,6 @@ cout << sim.N << endl;
         }
 ///////////////////////////////////////
 
-         // rescale_velocities();
          
 //FORCES////////////////////////
          e->Fx = 0;
@@ -194,17 +208,99 @@ cout << sim.N << endl;
 ////////////////////////////////
          
 
+   //        int rescale_velocities() {
+   //    //rescales the velocities to be consistent with the current kinetic energy
+   //    float R = 0.5*sim->m_e*(vx*vx + vy*vy + vz*vz) / E;
+   //    vz = vz/sqrt(R);
+   //    return 0; 
+   // // }
+         float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
+         e->vz = e->vz/sqrt(R);
+
+
+
+   // SCATTERINGGGGGGGGGGG
+
+         int angle=0;
+         double k=0;
+
+         int scale = 0;
+
+         double max = 0;
+
+         double radian=0;
+         double sin_4th=0;
+         double cnst = 3.4e-5; //should be -54
+
+         double verovatnoca = 0;
+
+         for(angle=-90; angle<91; angle++) {
+
+            radian=(angle)*M_PI/180;
+            sin_4th = pow(sin(radian), 4);
+
+            if (sin_4th == 0) {
+               sin_4th = pow((sin((angle+1)*M_PI/180)),4);
+            }
+
+            if(angle<0) {
+               sin_4th = -sin_4th;
+            }
+
+            k = cnst / sin_4th;
+            verovatnoca = k / (pow(e->E,2)); 
+
+            if(verovatnoca>max) {
+               max = verovatnoca;
+            }
+
+            verovatnoca_arr[angle+90] = verovatnoca;
+
+         }
+
+
+         for(scale=0; scale<180; scale++) {
+            verovatnoca_arr[scale] = verovatnoca_arr[scale] / max;
+         }
+
+
 
 //INTEGRATION////////////////////////////////////
-         //cos20 = 0.94
-         //sin20 = 0.342
+         // Get a different random number each time the program runs
+
+         float randomNum = -1 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1 + 1)));
+
+         // cout<<"\n  rand num: "<<randomNum;
+         float min_dif = 100;
+         float dif = 0;
+         int angle_index = 0;
+         int find_c = 0;
+
+         for(find_c = 0; find_c < 180; find_c++) {
+            dif = abs(verovatnoca_arr[find_c]-randomNum);
+            // cout<<"  dif: "<<verovatnoca_arr[find_c];
+            if (dif<min_dif) {
+               min_dif = dif;
+               angle_index = find_c;
+            }
+         }
+         
+         // cout<<"\n angle index: "<<angle_index-90;
+
+         int alpha=(angle_index-90)*M_PI/180;
+
+         // int alpha = ;
+
+         min_dif = 100;
+
          //Perform equation of motion integration:
          e->vx +=  (e->Fx / sim.m_e) * sim.dt ;
-         // cout<<"\n velx before: "<<e->vx;
-         e->vx *= 0.705;
-         // cout<<"       velx after: "<<e->vx;
-         e->vy +=  (e->Fy / sim.m_e) * sim.dt ;
-         e->vy *= 0.705;
+
+         e->vx *= cos(alpha*3.14159/180);         //converting to radians
+
+         e->vy +=  (e->Fy / sim.m_e * sim.dt );
+         e->vy *= sin(alpha*3.14159/180);
+
          e->vz +=  (e->Fz / sim.m_e) * sim.dt ;
 
          e->x += e->vx * sim.dt;
@@ -246,9 +342,9 @@ cout << sim.N << endl;
                  << "\t" 
                  << e->vx 
                  << "\t" 
-                 << e->vy 
+                 << "  y: "<<e->vy 
                  << "\t" 
-                 << e->vz 
+                 <<"   z: "<<e->vz 
                  << "\n" ;
          }
          
