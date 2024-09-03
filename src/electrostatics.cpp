@@ -12,6 +12,8 @@
 #include <thread>
 #include "simulation.h"
 
+// #include "electron.h"
+
 using namespace std;
 
 class MagneticField {
