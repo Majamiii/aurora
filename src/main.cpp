@@ -58,6 +58,7 @@ int main() {
 
    double verovatnoca_arr[179];
    int ver_i = 0;
+   double z_2nd = 0;
 
    srand (static_cast <unsigned> (time(0)));
 
@@ -87,12 +88,11 @@ int main() {
          photon_density.reset();
          energy_density.write_out(t);
          energy_density.reset();
-         // cout<<"\n t:  "<<t;
       }
 
 cout << sim.N << endl;
 
-      for (int i=0; i<sim.N ; i++) {      //sim.N = 2 to the power of 20
+      for (int i=0; i<sim.N ; i++) {      //   for every electron
 
          Electron* e = &sim.electrons[i]; //make a pointer to the electron we're dealing with
          
@@ -121,21 +121,26 @@ cout << sim.N << endl;
          if (rnd/3.0 < e->p_emit) {
             e->interaction_count++;
             rnd = (float)rand()/RAND_MAX;
-            if (rnd < e->p_emit_r) {
+            if (rnd < e->p_emit_r) {      //kiseonik
                //emit red
                e->emitting = 1;
                e->emitting_time_left = e->get_t_emit_red();
                e->emitting_wavelength = sim.wavelength_red;
-            } else if (rnd < (e->p_emit_r + e->p_emit_g)) {
+               z_2nd = 8*8;      //atomic num of oxygen, for the rutherford formula
+            } else if (rnd < (e->p_emit_r + e->p_emit_g)) {    //kiseonik
                //emit green
                e->emitting = 1;
                e->emitting_time_left = e->get_t_emit_green();
                e->emitting_wavelength = sim.wavelength_green;
-            } else { 
+               z_2nd = 8*8;      //atomic num of oxygen, for the rutherford formula
+
+            } else {                      //azot
                //emit blue
                e->emitting = 1;
                e->emitting_time_left = e->get_t_emit_blue();
                e->emitting_wavelength = sim.wavelength_blue;
+               z_2nd = 7*7;      //atomic num of nitrogen, for the rutherford formula
+               // cout << "   z " << z_2nd;
             }
 
          }
@@ -213,9 +218,11 @@ cout << sim.N << endl;
    //    float R = 0.5*sim->m_e*(vx*vx + vy*vy + vz*vz) / E;
    //    vz = vz/sqrt(R);
    //    return 0; 
-   // // }
-         float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
-         e->vz = e->vz/sqrt(R);
+   // // // }
+   //       float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
+   //       e->vz = e->vz/sqrt(R);
+
+   // RESCALING VELOCITIES
 
 
 
@@ -230,7 +237,7 @@ cout << sim.N << endl;
 
          double radian=0;
          double sin_4th=0;
-         double cnst = 3.4e-5; //should be -54
+         double cnst = 3.4e-5; 
 
          double verovatnoca = 0;
 
@@ -248,7 +255,7 @@ cout << sim.N << endl;
             }
 
             k = cnst / sin_4th;
-            verovatnoca = k / (pow(e->E,2)); 
+            verovatnoca = k / (pow(e->E,2)) * z_2nd; 
 
             if(verovatnoca>max) {
                max = verovatnoca;
