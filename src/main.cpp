@@ -26,6 +26,12 @@
 #include <random>
 #include <cstdlib>
 
+#include <omp.h>
+// OMP_NUM_THREADS
+#ifndef THREAD_NUM
+#define THREAD_NUM 12
+#endif
+
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -35,6 +41,7 @@ using namespace std;
 
 
 int main() {
+   omp_set_num_threads(THREAD_NUM);
    srand ( time(NULL));
    vector<float> randoms;
    Simulation sim;
@@ -82,6 +89,7 @@ int main() {
    cout << endl;
    cout << "Beginning to integrate: " << endl;
    for (t=0; t< sim.tmax; t++ ) {
+      cout<<" t : "<< t << "\n";
      sim.t = t;
       if (t%5==0 && t>19) {
          photon_density.write_image(t);
@@ -90,9 +98,17 @@ int main() {
          energy_density.reset();
       }
 
-cout << sim.N << endl;
+// cout << sim.N << endl;
+
+      #pragma omp parallel for private(voxelx, voxely, voxelz, z_2nd, rnd) 
+
+      // #pragma omp parallel for ordered schedule(dynamic)
+      // #pragma omp parallel for
 
       for (int i=0; i<sim.N ; i++) {      //   for every electron
+
+         // cout << "\r working on iteration " << i << "  "  << endl;
+         // cout << i << "   ";
 
          Electron* e = &sim.electrons[i]; //make a pointer to the electron we're dealing with
          
@@ -107,6 +123,10 @@ cout << sim.N << endl;
             e->reset();
             e->t = t;
          }
+
+         //Marko je car hihi
+         //sergej je veci car hi hi hi ha
+         //skibidi ubijte se
           
          voxelx = int((float)photon_density.resolution_x / (float)sim.box_sizex * e->x);
          voxely = int((float)photon_density.resolution_y / (float)sim.box_sizey * e->y);
@@ -179,6 +199,8 @@ cout << sim.N << endl;
                e->emitting_wavelength = 0;
             }
          }
+
+         
 
 
 //CHARGE DENSITY CALCULATION///////////////////////////////
@@ -314,10 +336,7 @@ cout << sim.N << endl;
          e->y += e->vy * sim.dt;
          e->z += e->vz * sim.dt;
 //////////////////////////////////////////////////
-
-// change horizontal velocity: trying out for a 15 degree angle  
          
-
 
 ///////////PERIODIC BOUNDARY CONDITIONS/////
            while (e->x < 0) {e->x += sim.box_sizex;}
@@ -329,32 +348,37 @@ cout << sim.N << endl;
 
 
 
-//print out a bunch of info for one of the particles so we can see how simulation is progressing 
-         if (e->ID==3) { 
-            cout << t 
-                 << "\t" 
-                 << e->x 
-                 << "\t" 
-                 << e->y 
-                 << "\t" 
-                 << e->z 
-                 << "\tE: " 
-                 << e->E 
-                 <<  "\t"  
-                 << e->Fx 
-                 << "\t" 
-                 << e->Fy 
-                 << "\t" 
-                 << e->Fz 
-                 << "\t" 
-                 << e->vx 
-                 << "\t" 
-                 << "  y: "<<e->vy 
-                 << "\t" 
-                 <<"   z: "<<e->vz 
-                 << "\n" ;
-         }
+// //print out a bunch of info for one of the particles so we can see how simulation is progressing 
+//          if (e->ID==3) { 
+//             cout << t 
+//                  << "\t" 
+//                  << e->x 
+//                  << "\t" 
+//                  << e->y 
+//                  << "\t" 
+//                  << e->z 
+//                  << "\tE: " 
+//                  << e->E 
+//                  <<  "\t"  
+//                  << e->Fx 
+//                  << "\t" 
+//                  << e->Fy 
+//                  << "\t" 
+//                  << e->Fz 
+//                  << "\t" 
+//                  << e->vx 
+//                  << "\t" 
+//                  << "  y: "<<e->vy 
+//                  << "\t" 
+//                  <<"   z: "<<e->vz 
+//                  << "\n" ;
+//          }
          
+
+         // if (i == 500) {
+         //    cout<<"\n"<<i << "  hi   ";
+         //    i = 1048576;
+         // }
       } // end of loop over electrons
 
       //recompute the electric field
@@ -363,8 +387,10 @@ cout << sim.N << endl;
       }
       rho.reset(); //zero out the charge density for next time
 
-
    } //end of loop over time
+
+   #pragma omp ordered
+
    
    cout << endl;
 

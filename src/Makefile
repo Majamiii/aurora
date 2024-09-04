@@ -9,7 +9,9 @@ TARGET = run
 FFTW_DIR = C:/fftw-3.3.5-dll64
 
 # Define the compilation flags
-CXXFLAGS = -std=c++17 -I$(FFTW_DIR)
+CXXFLAGS = -std=c++17 -fopenmp -o -I$(FFTW_DIR)
+
+# CXXFLAGS = -std=c++17 -I$(FFTW_DIR)
 
 # Define the linker flags
 LDFLAGS = -L$(FFTW_DIR) -lfftw3-3 -lfftw3f-3 -lfftw3l-3 -mconsole
@@ -47,23 +49,3 @@ prepare:
 	mkdir rho
 	mkdir relative
 	mkdir deposition
-
-# files=simulation.h utility_functions.h electrostatics.cpp io.cpp electron.h
-
-# main: $(files) 
-# 	$(CXX) -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread  -orun
-
-# debug: $(files) 
-# 	$(CXX) -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun && gdb ./run
-
-# valgrind: $(files) 
-# 	$(CXX) -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun && valgrind ./run
-
-# clang: $(files)
-# 	clang++ -g -std=c++17 main.cpp -L/usr/include -lfftw3 -pthread -orun
-
-# clean:
-# 	rm run output/* energy/* rho/*
-
-# prepare:
-# 	mkdir output energy rho
