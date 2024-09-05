@@ -67,6 +67,9 @@ int main() {
    int ver_i = 0;
    double z_2nd = 0;
 
+   float v_curr =  0;
+   float alpha_0 = 0;
+
    srand (static_cast <unsigned> (time(0)));
 
 
@@ -90,6 +93,7 @@ int main() {
    cout << "Beginning to integrate: " << endl;
    for (t=0; t< sim.tmax; t++ ) {
       cout<<" t : "<< t << "\n";
+
      sim.t = t;
       if (t%5==0 && t>19) {
          photon_density.write_image(t);
@@ -98,17 +102,9 @@ int main() {
          energy_density.reset();
       }
 
-// cout << sim.N << endl;
-
-      #pragma omp parallel for private(voxelx, voxely, voxelz, z_2nd, rnd) 
-
-      // #pragma omp parallel for ordered schedule(dynamic)
-      // #pragma omp parallel for
+      #pragma omp parallel for private(voxelx, voxely, voxelz) 
 
       for (int i=0; i<sim.N ; i++) {      //   for every electron
-
-         // cout << "\r working on iteration " << i << "  "  << endl;
-         // cout << i << "   ";
 
          Electron* e = &sim.electrons[i]; //make a pointer to the electron we're dealing with
          
@@ -123,10 +119,6 @@ int main() {
             e->reset();
             e->t = t;
          }
-
-         //Marko je car hihi
-         //sergej je veci car hi hi hi ha
-         //skibidi ubijte se
           
          voxelx = int((float)photon_density.resolution_x / (float)sim.box_sizex * e->x);
          voxely = int((float)photon_density.resolution_y / (float)sim.box_sizey * e->y);
@@ -160,7 +152,6 @@ int main() {
                e->emitting_time_left = e->get_t_emit_blue();
                e->emitting_wavelength = sim.wavelength_blue;
                z_2nd = 7*7;      //atomic num of nitrogen, for the rutherford formula
-               // cout << "   z " << z_2nd;
             }
 
          }
@@ -233,16 +224,12 @@ int main() {
          e->Fy += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ey,voxelx,voxely,voxelz));
          e->Fz += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ez,voxelx,voxely,voxelz));
 ////////////////////////////////
-         
 
-   //        int rescale_velocities() {
-   //    //rescales the velocities to be consistent with the current kinetic energy
-   //    float R = 0.5*sim->m_e*(vx*vx + vy*vy + vz*vz) / E;
-   //    vz = vz/sqrt(R);
-   //    return 0; 
-   // // // }
-   //       float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
-   //       e->vz = e->vz/sqrt(R);
+
+   // RESCALING VELOCITIES
+
+         // float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
+         // e->vz = e->vz/sqrt(R);
 
    // RESCALING VELOCITIES
 
@@ -314,21 +301,24 @@ int main() {
             }
          }
          
-         // cout<<"\n angle index: "<<angle_index-90;
-
-         int alpha=(angle_index-90)*M_PI/180;
-
-         // int alpha = ;
+         float alpha=(angle_index-90);
 
          min_dif = 100;
+
+         alpha_0 = atan(e->vy / e->vx);
+
+         alpha += alpha_0;
+         // cout<<"\n angle0: "<<alpha;
+
+         v_curr = sqrt(pow(e->vx, 2) + pow(e->vy, 2));
 
          //Perform equation of motion integration:
          e->vx +=  (e->Fx / sim.m_e) * sim.dt ;
 
-         e->vx *= cos(alpha*3.14159/180);         //converting to radians
+         e->vx = v_curr * cos(alpha*3.14159/180);         //converting to radians
 
          e->vy +=  (e->Fy / sim.m_e * sim.dt );
-         e->vy *= sin(alpha*3.14159/180);
+         e->vy = v_curr * sin(alpha*3.14159/180);
 
          e->vz +=  (e->Fz / sim.m_e) * sim.dt ;
 
@@ -349,36 +339,32 @@ int main() {
 
 
 // //print out a bunch of info for one of the particles so we can see how simulation is progressing 
-//          if (e->ID==3) { 
-//             cout << t 
-//                  << "\t" 
-//                  << e->x 
-//                  << "\t" 
-//                  << e->y 
-//                  << "\t" 
-//                  << e->z 
-//                  << "\tE: " 
-//                  << e->E 
-//                  <<  "\t"  
-//                  << e->Fx 
-//                  << "\t" 
-//                  << e->Fy 
-//                  << "\t" 
-//                  << e->Fz 
-//                  << "\t" 
-//                  << e->vx 
-//                  << "\t" 
-//                  << "  y: "<<e->vy 
-//                  << "\t" 
-//                  <<"   z: "<<e->vz 
-//                  << "\n" ;
-//          }
+         if (e->ID==3) { 
+            cout << t 
+                 << "\t" 
+                 << e->x 
+                 << "\t" 
+                 << e->y 
+                 << "\t" 
+                 << e->z 
+                 << "\tE: " 
+                 << e->E 
+                 <<  "\t"  
+                 << e->Fx 
+                 << "\t" 
+                 << e->Fy 
+                 << "\t" 
+                 << e->Fz 
+                 << "\t" 
+                 << e->vx 
+                 << "\t" 
+                 << "  y: "<<e->vy 
+                 << "\t" 
+                 <<"   z: "<<e->vz 
+                 << "\n" ;
+         }
          
 
-         // if (i == 500) {
-         //    cout<<"\n"<<i << "  hi   ";
-         //    i = 1048576;
-         // }
       } // end of loop over electrons
 
       //recompute the electric field
@@ -388,9 +374,6 @@ int main() {
       rho.reset(); //zero out the charge density for next time
 
    } //end of loop over time
-
-   #pragma omp ordered
-
    
    cout << endl;
 
