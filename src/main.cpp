@@ -63,12 +63,14 @@ int main() {
    float Bz=0.0;
    float tmpfloat;
 
-   double verovatnoca_arr[179];
+   double verovatnoca_arr[359];
    int ver_i = 0;
    double z_2nd = 0;
 
    float v_curr =  0;
    float alpha_0 = 0;
+
+   float suma_verovatnoca = 0;
 
    srand (static_cast <unsigned> (time(0)));
 
@@ -102,7 +104,7 @@ int main() {
          energy_density.reset();
       }
 
-      #pragma omp parallel for private(voxelx, voxely, voxelz) 
+      // #pragma omp parallel for private(voxelx, voxely, voxelz, suma_verovatnoca) 
 
       for (int i=0; i<sim.N ; i++) {      //   for every electron
 
@@ -226,90 +228,96 @@ int main() {
 ////////////////////////////////
 
 
-   // RESCALING VELOCITIES
-
-         // float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
-         // e->vz = e->vz/sqrt(R);
-
-   // RESCALING VELOCITIES
-
 
 
    // SCATTERINGGGGGGGGGGG
 
          int angle=0;
-         double k=0;
+         float k=0;
 
          int scale = 0;
 
-         double max = 0;
+         float sum_cdf = 0;
 
-         double radian=0;
-         double sin_4th=0;
-         double cnst = 3.4e-5; 
+         float radian=0;
+         float sin_4th=0;
+         float cnst = 3.4e-5; 
 
-         double verovatnoca = 0;
+         float verovatnoca = 0;
 
-         for(angle=-90; angle<91; angle++) {
+         for(angle=0; angle<180; angle++) {
 
             radian=(angle)*M_PI/180;
             sin_4th = pow(sin(radian), 4);
 
-            if (sin_4th == 0) {
+            if (sin(radian) == 0) {
                sin_4th = pow((sin((angle+1)*M_PI/180)),4);
             }
 
-            if(angle<0) {
-               sin_4th = -sin_4th;
-            }
+            // if(angle>180) {
+            //    sin_4th = -sin_4th;
+            // }
 
             k = cnst / sin_4th;
             verovatnoca = k / (pow(e->E,2)) * z_2nd; 
 
-            if(verovatnoca>max) {
-               max = verovatnoca;
-            }
+            suma_verovatnoca += verovatnoca;       //za CDF
 
-            verovatnoca_arr[angle+90] = verovatnoca;
+            verovatnoca_arr[angle] = verovatnoca;
 
          }
 
+         for(scale=1; scale<180; scale++) {
+            // suma_verovatnoca += verovatnoca_arr[scale];
+            verovatnoca_arr[scale] += verovatnoca_arr[scale-1];
+         }
 
          for(scale=0; scale<180; scale++) {
-            verovatnoca_arr[scale] = verovatnoca_arr[scale] / max;
+            verovatnoca_arr[scale] = verovatnoca_arr[scale] / suma_verovatnoca;
+            // cout<<"\n verovatnoca: "<< verovatnoca_arr[scale] << "   za ugao  "<<scale;
          }
+         suma_verovatnoca = 0;
+         sum_cdf = 0;
 
 
 
 //INTEGRATION////////////////////////////////////
          // Get a different random number each time the program runs
 
-         float randomNum = -1 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1 + 1)));
-
-         // cout<<"\n  rand num: "<<randomNum;
+         float randomNum = 0 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1)));
          float min_dif = 100;
          float dif = 0;
-         int angle_index = 0;
+         float alpha = 0;
          int find_c = 0;
 
          for(find_c = 0; find_c < 180; find_c++) {
             dif = abs(verovatnoca_arr[find_c]-randomNum);
-            // cout<<"  dif: "<<verovatnoca_arr[find_c];
             if (dif<min_dif) {
                min_dif = dif;
-               angle_index = find_c;
+               alpha = find_c;
             }
          }
-         
-         float alpha=(angle_index-90);
+
+         int randomNum2 = rand() % 2;
+
+         if ((randomNum2 == 1)&&(alpha != 0)) {
+            alpha = -alpha;
+         }
+
+         // cout << "\n angle: "<<alpha;
 
          min_dif = 100;
 
-         alpha_0 = atan(e->vy / e->vx);
+         if((abs(e->vx)>0.01)&&(abs(e->vy)>0.01)) {            
+            alpha_0 = atan(e->vy / e->vx);
+            alpha += alpha_0;
+         }
+         else {
+            alpha_0 = 0;
+         }
 
-         alpha += alpha_0;
+
          // cout<<"\n angle0: "<<alpha;
-
          v_curr = sqrt(pow(e->vx, 2) + pow(e->vy, 2));
 
          //Perform equation of motion integration:
@@ -335,6 +343,13 @@ int main() {
            while (e->y > sim.box_sizey) {e->y -= sim.box_sizey;}
 ///////////////////////////////////////////
 
+
+   // RESCALING VELOCITIES
+
+         // float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
+         // e->vz = e->vz/sqrt(R);
+
+   // RESCALING VELOCITIES
 
 
 
