@@ -11,7 +11,9 @@
 #include <stdio.h>      /* printf, NULL */
 #include <stdlib.h>     /* srand, rand */
 
+
 //my own stuff
+#include <iomanip>
 #include "utility_functions.h"
 #include "simulation.h"
 #include "electrostatics.cpp"
@@ -26,6 +28,12 @@
 #include <random>
 #include <cstdlib>
 
+#include <omp.h>
+// OMP_NUM_THREADS
+#ifndef THREAD_NUM
+#define THREAD_NUM 12
+#endif
+
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -34,7 +42,21 @@
 using namespace std;
 
 
+// integracija metodom trapeza
+float integrate(float theta_max, float theta_min) {
+
+    float h = abs(theta_max - theta_min) / 180;
+    float integral = 0.0;
+
+    integral += 0.5 * h * (theta_max + theta_min);
+
+    return integral;
+}
+
+
+
 int main() {
+   omp_set_num_threads(THREAD_NUM);
    srand ( time(NULL));
    vector<float> randoms;
    Simulation sim;
@@ -51,13 +73,22 @@ int main() {
    int voxelx,voxely,voxelz;
    int Evoxelx,Evoxely,Evoxelz;
    vector<float> B;
-   float By=-1.0;
-   float Bx=0.0;
-   float Bz=0.0;
+   // float By=-1.0;
+   // float Bx=0.0;
+   // float Bz=0.0;
+   float By=-0.1; //y je ka jugu
+   float Bx=0.0;  //x je ka istoku
+   float Bz=-1.0; //z je ka gore (od jezgra ka povrsini)
    float tmpfloat;
 
-   double verovatnoca_arr[179];
+   double verovatnoca_arr[180];
    int ver_i = 0;
+   double z_2nd = 0;
+
+   float v_curr =  0;
+   float alpha_0 = 0;
+
+   float suma_verovatnoca = 0;
 
    srand (static_cast <unsigned> (time(0)));
 
@@ -81,18 +112,19 @@ int main() {
    cout << endl;
    cout << "Beginning to integrate: " << endl;
    for (t=0; t< sim.tmax; t++ ) {
+      cout<<" t : "<< t << "\n";
+
      sim.t = t;
       if (t%5==0 && t>19) {
          photon_density.write_image(t);
          photon_density.reset();
          energy_density.write_out(t);
          energy_density.reset();
-         // cout<<"\n t:  "<<t;
       }
 
-cout << sim.N << endl;
+      // #pragma omp parallel for private(voxelx, voxely, voxelz, suma_verovatnoca) 
 
-      for (int i=0; i<sim.N ; i++) {      //sim.N = 2 to the power of 20
+      for (int i=0; i<sim.N ; i++) {      //   for every electron
 
          Electron* e = &sim.electrons[i]; //make a pointer to the electron we're dealing with
          
@@ -121,21 +153,25 @@ cout << sim.N << endl;
          if (rnd/3.0 < e->p_emit) {
             e->interaction_count++;
             rnd = (float)rand()/RAND_MAX;
-            if (rnd < e->p_emit_r) {
+            if (rnd < e->p_emit_r) {      //kiseonik
                //emit red
                e->emitting = 1;
                e->emitting_time_left = e->get_t_emit_red();
                e->emitting_wavelength = sim.wavelength_red;
-            } else if (rnd < (e->p_emit_r + e->p_emit_g)) {
+               z_2nd = 8*8;      //atomic num of oxygen, for the rutherford formula
+            } else if (rnd < (e->p_emit_r + e->p_emit_g)) {    //kiseonik
                //emit green
                e->emitting = 1;
                e->emitting_time_left = e->get_t_emit_green();
                e->emitting_wavelength = sim.wavelength_green;
-            } else { 
+               z_2nd = 8*8;      //atomic num of oxygen, for the rutherford formula
+
+            } else {                      //azot
                //emit blue
                e->emitting = 1;
                e->emitting_time_left = e->get_t_emit_blue();
                e->emitting_wavelength = sim.wavelength_blue;
+               z_2nd = 7*7;      //atomic num of nitrogen, for the rutherford formula
             }
 
          }
@@ -175,6 +211,8 @@ cout << sim.N << endl;
             }
          }
 
+         
+
 
 //CHARGE DENSITY CALCULATION///////////////////////////////
         voxelx = int((float)rho.resolution_x / (float)sim.box_sizex * e->x); 
@@ -206,100 +244,120 @@ cout << sim.N << endl;
          e->Fy += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ey,voxelx,voxely,voxelz));
          e->Fz += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ez,voxelx,voxely,voxelz));
 ////////////////////////////////
-         
 
-   //        int rescale_velocities() {
-   //    //rescales the velocities to be consistent with the current kinetic energy
-   //    float R = 0.5*sim->m_e*(vx*vx + vy*vy + vz*vz) / E;
-   //    vz = vz/sqrt(R);
-   //    return 0; 
-   // // }
-         float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
-         e->vz = e->vz/sqrt(R);
 
 
 
    // SCATTERINGGGGGGGGGGG
 
          int angle=0;
-         double k=0;
+         float k=0;
 
          int scale = 0;
 
-         double max = 0;
+         float sum_cdf = 0;
 
-         double radian=0;
-         double sin_4th=0;
-         double cnst = 3.4e-5; //should be -54
+         float radian=0;
+         float sin_4th=0;
+         float sin_4th_2 = 0;
+         float cnst = 3.4e-5; 
+         float radian_2 = 0;
 
-         double verovatnoca = 0;
+         float suma_verovatnoca = 0;
 
-         for(angle=-90; angle<91; angle++) {
+         float dif_presek = 0;
+         float dif_presek_za_integraciju = 0;
+         
+         float dif_presek_za_integraciju_2 = 0;
 
-            radian=(angle)*M_PI/180;
-            sin_4th = pow(sin(radian), 4);
+         sin_4th = 0.01;
+         k = cnst / sin_4th;
+         dif_presek = k / e->E / (pow(e->E,2)) * z_2nd; 
+         dif_presek_za_integraciju = dif_presek * sin(M_PI / 180);
 
-            if (sin_4th == 0) {
-               sin_4th = pow((sin((angle+1)*M_PI/180)),4);
+         float integral = 0.0;
+
+         for(angle=1; angle<180; angle++) {
+
+            radian_2=angle*M_PI/180;
+            
+            sin_4th_2 = pow(sin(radian_2), 4);
+
+            if(sin_4th_2 < 0.0001) {
+               sin_4th_2 = 0.0001;
             }
+            
+            k = cnst / sin_4th_2;
+            dif_presek = k / (pow(e->E,2)) * z_2nd;
 
-            if(angle<0) {
-               sin_4th = -sin_4th;
-            }
+            dif_presek_za_integraciju_2 = dif_presek * sin(radian_2);
 
-            k = cnst / sin_4th;
-            verovatnoca = k / (pow(e->E,2)); 
+            integral += dif_presek_za_integraciju_2;
 
-            if(verovatnoca>max) {
-               max = verovatnoca;
-            }
+            verovatnoca_arr[angle] = dif_presek_za_integraciju_2;
 
-            verovatnoca_arr[angle+90] = verovatnoca;
-
+            dif_presek_za_integraciju = dif_presek_za_integraciju_2;
          }
 
 
-         for(scale=0; scale<180; scale++) {
-            verovatnoca_arr[scale] = verovatnoca_arr[scale] / max;
+         //CDF
+
+
+         for(scale=1; scale<180; scale++) {
+            verovatnoca_arr[scale] /= integral;
+
+            if(scale>1){verovatnoca_arr[scale] += verovatnoca_arr[scale-1];}
+            // cout<<"\nver: "<<verovatnoca_arr[scale]<<"    "<<scale;
+
+            suma_verovatnoca += verovatnoca_arr[scale];
          }
+            // cout<<"\n suma: "<<suma_verovatnoca;
 
 
 
 //INTEGRATION////////////////////////////////////
          // Get a different random number each time the program runs
 
-         float randomNum = -1 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1 + 1)));
-
-         // cout<<"\n  rand num: "<<randomNum;
+         float randomNum = 0 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(1)));
          float min_dif = 100;
          float dif = 0;
-         int angle_index = 0;
+         float alpha = 0;
          int find_c = 0;
 
          for(find_c = 0; find_c < 180; find_c++) {
             dif = abs(verovatnoca_arr[find_c]-randomNum);
-            // cout<<"  dif: "<<verovatnoca_arr[find_c];
             if (dif<min_dif) {
                min_dif = dif;
-               angle_index = find_c;
+               alpha = find_c;
             }
          }
+
+         int randomNum2 = rand() % 2;
+
          
-         // cout<<"\n angle index: "<<angle_index-90;
-
-         int alpha=(angle_index-90)*M_PI/180;
-
-         // int alpha = ;
 
          min_dif = 100;
+
+         if((abs(e->vx)>0.05)&&(abs(e->vy)>0.05)) {            
+            alpha_0 = atan(e->vy / e->vx);
+            if ((randomNum2 == 1)&&(alpha_0 != 0)) {
+               alpha_0 = -alpha_0;
+            }
+            alpha += alpha_0;
+         }
+         else {
+            alpha_0 = 0;
+         }
+
+         v_curr = sqrt(pow(e->vx, 2) + pow(e->vy, 2));
 
          //Perform equation of motion integration:
          e->vx +=  (e->Fx / sim.m_e) * sim.dt ;
 
-         e->vx *= cos(alpha*3.14159/180);         //converting to radians
+         e->vx = v_curr * cos(alpha*3.14159/180);         //converting to radians, updating the speed
 
          e->vy +=  (e->Fy / sim.m_e * sim.dt );
-         e->vy *= sin(alpha*3.14159/180);
+         e->vy = v_curr * sin(alpha*3.14159/180);
 
          e->vz +=  (e->Fz / sim.m_e) * sim.dt ;
 
@@ -307,10 +365,7 @@ cout << sim.N << endl;
          e->y += e->vy * sim.dt;
          e->z += e->vz * sim.dt;
 //////////////////////////////////////////////////
-
-// change horizontal velocity: trying out for a 15 degree angle  
          
-
 
 ///////////PERIODIC BOUNDARY CONDITIONS/////
            while (e->x < 0) {e->x += sim.box_sizex;}
@@ -320,9 +375,16 @@ cout << sim.N << endl;
 ///////////////////////////////////////////
 
 
+   // RESCALING VELOCITIES
+
+         // float R = 0.5*sim.m_e*(e->vx*e->vx + e->vy*e->vy + e->vz*e->vz) / e->E;
+         // e->vz = e->vz/sqrt(R);
+
+   // RESCALING VELOCITIES
 
 
-//print out a bunch of info for one of the particles so we can see how simulation is progressing 
+
+// //print out a bunch of info for one of the particles so we can see how simulation is progressing 
          if (e->ID==3) { 
             cout << t 
                  << "\t" 
@@ -345,9 +407,11 @@ cout << sim.N << endl;
                  << "  y: "<<e->vy 
                  << "\t" 
                  <<"   z: "<<e->vz 
+                 <<"   angle: "<<alpha
                  << "\n" ;
          }
          
+
       } // end of loop over electrons
 
       //recompute the electric field
@@ -355,7 +419,6 @@ cout << sim.N << endl;
          E_field.compute();
       }
       rho.reset(); //zero out the charge density for next time
-
 
    } //end of loop over time
    

@@ -41,7 +41,7 @@ int main() {
    int voxelx,voxely,voxelz;
    int Evoxelx,Evoxely,Evoxelz;
    vector<float> B;
-   float By=-1.0;
+   float By=-1.0; //magnetno polje inicijalizacija
    float Bx=0.0;
    float Bz=0.0;
    float tmpfloat;
@@ -65,6 +65,7 @@ int main() {
    // int t0=0;
    cout << endl;
    cout << "Beginning to integrate: " << endl;
+   // cout << "Electron objects createdlollllll" << endl;
    for (t=0; t< sim.tmax; t++ ) {
      sim.t = t;
       if (t%5==0 && t>19) {
@@ -187,29 +188,25 @@ cout << sim.N << endl;
          e->Fx += (e->vy * Bz - e->vz * By) / 1e-1 ;
          e->Fy += (e->vz * Bx - e->vx * Bz) / 1e-1;
          e->Fz += (e->vx * By - e->vy * Bx) / 1e-1 ;
+         // cout<<"magnet "<<e->Fx<<"  "<<e->Fz<<"  "<<e->Fy<<"\n";
          //electric force F = q E
          e->Fx += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ex,voxelx,voxely,voxelz));
          e->Fy += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ey,voxelx,voxely,voxelz));
          e->Fz += 1.0e12/sim.N*(sim.e_chg * E_field.get_element(E_field.Ez,voxelx,voxely,voxelz));
+
 ////////////////////////////////
          
 
 //INTEGRATION////////////////////////////////////
-         //cos20 = 0.94
-         //sin20 = 0.342
          //Perform equation of motion integration:
          e->vx +=  (e->Fx / sim.m_e) * sim.dt ;
-         // e->vx *= 0.94
          e->vy +=  (e->Fy / sim.m_e) * sim.dt ;
-         // e->vy *= 0.342;
          e->vz +=  (e->Fz / sim.m_e) * sim.dt ;
 
          e->x += e->vx * sim.dt;
          e->y += e->vy * sim.dt;
          e->z += e->vz * sim.dt;
-//////////////////////////////////////////////////
-
-// change horizontal velocity: trying out for a 15 degree angle         
+//////////////////////////////////////////////////   
 
 
 ///////////PERIODIC BOUNDARY CONDITIONS/////
