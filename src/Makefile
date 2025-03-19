@@ -9,10 +9,10 @@ TARGET = run
 FFTW_DIR = C:/fftw-3.3.5-dll64
 
 # Define the compilation flags
-CXXFLAGS = -std=c++17 -I$(FFTW_DIR)
+CXXFLAGS = -std=c++17 -I$(FFTW_DIR) -fopenmp
 
 # Define the linker flags
-LDFLAGS = -L$(FFTW_DIR) -lfftw3-3 -lfftw3f-3 -lfftw3l-3 -mconsole
+LDFLAGS = -L$(FFTW_DIR) -lfftw3-3 -lfftw3f-3 -lfftw3l-3 -mconsole -fopenmp
 
 # Source and object files
 # SRCS = main.cpp electrostatics.cpp io.cpp

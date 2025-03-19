@@ -21,10 +21,18 @@
 #include <windows.h>
 
 
+#include <omp.h>
+// OMP_NUM_THREADS
+#ifndef THREAD_NUM
+#define THREAD_NUM 12
+#endif
+
+
 using namespace std;
 
 
 int main() {
+   omp_set_num_threads(THREAD_NUM);
    srand ( time(NULL));
    vector<float> randoms;
    Simulation sim;
@@ -44,6 +52,13 @@ int main() {
    float By=-1.0; //magnetno polje inicijalizacija
    float Bx=0.0;
    float Bz=0.0;
+
+   
+   // float By=0.04; //y je ka jugu
+   // float Bx=-0.252;  //x je ka istoku
+   // float Bz=-1.0; //z je ka gore (od jezgra ka povrsini)
+
+
    float tmpfloat;
 
 
@@ -77,6 +92,8 @@ int main() {
       }
 
 cout << sim.N << endl;
+
+      #pragma omp parallel for private(voxelx, voxely, voxelz)
 
       for (int i=0; i<sim.N ; i++) {      //sim.N = 2 to the power of 20
 

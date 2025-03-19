@@ -5,6 +5,7 @@
 #include <math.h>
 #include "utility_functions.h" 
 #include <fstream>
+#include <iostream>
 #include <string.h>
 #include "C:\fftw-3.3.5-dll64\fftw3.h"
 // #include <fftw3.h>
@@ -26,6 +27,7 @@ class MagneticField {
          r.push_back(0);
          r.push_back(-strength);
          r.push_back(0);
+         // cout<<"magnet ";
          return r;
       }
 };

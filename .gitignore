@@ -1,0 +1,11 @@
+build/
+output/
+rho/
+energy/
+pngs/
+run.exe
+notes.txt
+deposition_graph.py
+relative/
+deposition/
+../maurora
