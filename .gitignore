@@ -9,3 +9,16 @@ deposition_graph.py
 relative/
 deposition/
 ../maurora
+
+
+# Ignoriši binarne i kompajlirane fajlove
+*.exe
+*.o
+*.png
+
+# Ignoriši VS Code konfiguraciju
+.vscode/
+Maurora-workspace.code-workspace
+
+# Ignoriši foldere sa podacima
+data_after_235/
