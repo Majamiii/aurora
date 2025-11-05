@@ -2,6 +2,8 @@
 
 AuroraSim — Modified Version with Electron Scattering
 
+Paper: https://doi.ub.kg.ac.rs/doi/10-46793-ieeestec17-353m/
+
 This is a modified version of AuroraSim
 , originally developed by Kyle Mills. [https://github.com/aurora-sim/Aurora-Sim](https://github.com/millskyle/AuroraSim)
 I added electron scattering to the simulation, which noticeably improved the accuracy and realism of the auroral emission results.
